@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="534" height="492" 
+		 creationComplete="getProductos1()" >
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.utils.ObjectProxy;
+			
+			import spark.events.IndexChangeEvent;
+			
+			public var servicio:mx.rpc.http.HTTPService;
+			
+			//variables para el tamaño de letra
+			var banderasonido:Boolean= new Boolean(false);
+			var number = 12;
+			var sizeTitle = 36;
+			
+			protected function btnSaveForHire_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub					
+				var persona : Object = new Object();
+				var sihay : Object = new Object();
+				
+				//if(jcomboProduct.selectedIndex != -1 ){
+					
+					if(jcomboNameTeacher.selectedIndex != -1){
+						
+						if(jcomboProduct.selectedIndex != -1 ){
+						
+						var a = jcomboProduct.selectedItem;
+						var b = jcomboNameTeacher.selectedItem;											
+						persona.producto = a.nombre;
+						persona.profesor = b.cedula;						
+						//usarHttpService(persona);
+						eliminarProducto(persona);
+						Alert.show("EL producto se elimina correctamente");	
+						PopUpManager.removePopUp(this);
+						}else {
+							jcomboProduct.setStyle("focusColor", "red");
+							jcomboProduct.setFocus();
+							jcomboProduct.selectedIndex = -1;
+							Alert.show("Debe de seleccioar un nombre de producto");					
+						}
+						
+					}else{
+						jcomboNameTeacher.setStyle("focusColor", "red");
+						jcomboNameTeacher.setFocus();
+						jcomboNameTeacher.selectedIndex = -1;
+						Alert.show("Debe de seleccioar un nombre de profesor");
+					}
+					
+				/*}else {
+					jcomboProduct.setStyle("focusColor", "red");
+					jcomboProduct.setFocus();
+					jcomboProduct.selectedIndex = -1;
+					Alert.show("Debe de seleccioar un nombre de producto");					
+				}*/
+				
+			}		
+			protected function checkbox1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(btndaltonico.selected){
+					this.setStyle("backgroundColor", "#000000");
+					this.setStyle("color","white");
+					
+				}else {
+					this.setStyle("backgroundColor", "#ffffff");
+					this.setStyle("color","black");
+				}
+				
+			}
+			protected function btnUpdateLeterUp_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				
+				if(number < 20 && sizeTitle < 44) {
+					number = number +2;				
+					sizeTitle = sizeTitle +2;
+					this.setStyle("fontSize", number);				
+					lbltitulo.setStyle("fontSize",sizeTitle);
+				}
+				// rollOver para evento pasar
+			}
+			protected function btnUpdateLeterDown_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub							
+				
+				
+				// lbltirar.text = ""+number +" "+sizeTitle;
+				if(number > 12 && sizeTitle > 36) {
+					number = number - 2;
+					sizeTitle = sizeTitle -2;
+					this.setStyle("fontSize",number);
+					lbltitulo.setStyle("fontSize",sizeTitle);	
+				}
+				
+			}
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if( btnsonido.label == "Activar Sonido")
+				{ 
+					btnsonido.label= "Desactivar Sonido";
+					btnsonido.setStyle("icon", "assets/mute.png");
+					banderasonido=true;
+				}
+				else
+				{
+					btnsonido.label= "Activar Sonido";
+					btnsonido.setStyle("icon", "assets/soun.png");
+					banderasonido = false;
+				}
+			}
+			protected function btnhelp_clickHandler(event:MouseEvent):void	
+			{
+				Alert.show("Interfaz crear Préstamo\nEsta es una interfaz para crear préstamo de productos a profesores.\nLos préstamos se cran seleccionando un nombre de producto\n" +
+					"y seleccionando un nombre de docente, posteriormente de presiona el botón Guardar préstamo");
+				
+			}
+			
+			//__________________________________________________________________
+			public function sepudehaceprestamo(nombre:Object){
+				
+				servicio = new mx.rpc.http.HTTPService();
+				servicio.url = "http://localhost/bolivariano/hayproductos.php";
+				servicio.method = "POST";
+				servicio.addEventListener("result", resSiprestamo);
+				servicio.addEventListener("fault", resNoprstamo);
+				servicio.send(nombre);
+				//Alert.show("Si tenemos resultado");
+			}
+			
+			public function resSiprestamo(evento:ResultEvent): void
+			{
+				
+				var resultado: Object = evento.result;
+				
+				if(resultado.productos.producto is ObjectProxy){	
+					//Alert.show("Si tenemos resultado es: "+resultado.productos.producto.cantidad);
+				} else {
+					
+					//jcomboProduct.dataProvider = resultado.productos.producto;
+				}
+			}
+			
+			// ERROR									
+			
+			public function resNoprstamo(evento:FaultEvent): void
+			{
+				var error: String = evento.fault.faultString;
+				Alert.show(error);
+			}
+			//________________________________________________________________
+			
+			
+			
+			//*************************************************************************
+			
+			// METODO PARA CONECTAR A PHP
+			public function usarHttpService(persona:Object):void
+			{
+				servicio = new mx.rpc.http.HTTPService();
+				servicio.url = "http://localhost/bolivariano/insertar.php";
+				servicio.method = "POST";
+				servicio.addEventListener("result", httpResult);
+				servicio.addEventListener("fault", httpFault);
+				servicio.send(persona);
+			}
+			
+			//USAR RESULTADOS
+			
+			public function httpResult(evento:ResultEvent): void
+			{
+				
+				var resultado: Object = evento.result;							
+				if(resultado.productos.producto is ObjectProxy){
+					// personas = new ArrayCollection([{id:resultado.personas.persona.id , nombre:resultado.personas.persona.nombre , 
+					// apellido:resultado.personas.persona.apellido , :resultado.personas.persona.nombre}]);
+					//jcomboProduct.dataProvider = resultado.productos.producto;
+					//Alert.show("EL prestamo se insero correctamente");
+					jcomboProduct.dataProvider = resultado.productos.producto;
+				} else {
+					//Alert.show("Entro");			
+					//Alert.show("EL prestamo se insero correctamente");
+					
+					jcomboProduct.dataProvider = resultado.productos.producto;
+					//jcomboNameTeacher.dataProvider = resultado.productos.producto;				
+			
+					//personas = resultado.personas.persona;
+				}
+			}
+			// ERROR									
+			
+			public function httpFault(evento:FaultEvent): void
+			{
+				var error: String = evento.fault.faultString;
+				Alert.show(error);
+			}
+			
+			//*****************************************************************************
+			
+			//***************************************************************************
+			// llenar combobox productos
+			public function getProductos():void
+			{
+				// TODO Auto-generated method stub	
+				
+				var persona : Object = new Object();				
+				
+				//if(jcomboProduct.selectedIndex != -1 ){
+					
+					if(jcomboNameTeacher.selectedIndex != -1){
+						//Alert.show("Si SI");
+						//var a = jcomboProduct.selectedItem;
+						var b = jcomboNameTeacher.selectedItem;											
+						//persona.producto = a.nombre;
+						persona.nombre = b.cedula;	
+						//Alert.show("ES: "+persona.nombre);
+						//usarHttpService(persona);
+						getproduct(persona);
+						//Alert.show("El préstamo se creo Exitosamente");	
+						
+					}else{
+						jcomboNameTeacher.setStyle("focusColor", "red");
+						jcomboNameTeacher.setFocus();
+						jcomboNameTeacher.selectedIndex = -1;
+						Alert.show("Debe de seleccioar un nombre de docente");
+					}
+					
+				/*}else {
+					jcomboProduct.setStyle("focusColor", "red");
+					jcomboProduct.setFocus();
+					jcomboProduct.selectedIndex = -1;
+					Alert.show("Debe de seleccioar un nombre de producto");					
+				}*/
+			}
+			// GET PRODUCTOS
+			public function getproduct(persona:Object):void
+			{
+				
+				
+				servicio = new mx.rpc.http.HTTPService();
+				servicio.url = "http://localhost/bolivariano/getproductosPrestados.php";
+				//servicio.url = "http://localhost/bolivariano/getdocente.php";
+				servicio.method = "POST";
+				
+				servicio.addEventListener("result", httpResult);
+				
+				servicio.addEventListener("fault", httpFault);
+				servicio.send(persona);
+			}
+			//**********************************************************************************
+			
+			//*********************************************************************************
+			// lenar combo docentes
+			public function getProductos1():void
+			{
+				var objeto1: Object = new Object();
+				//jcomboProduct.selectedIndex = 0;
+				getproduct1(objeto1);
+			}	
+			
+			//GETDOCENTES
+			public function getproduct1(persona1:Object):void
+			{
+				
+				servicio = new mx.rpc.http.HTTPService();
+				
+				//servicio.url = "http://localhost/bolivariano/getProductos.php";
+				servicio.url = "http://localhost/bolivariano/getdocente.php";				
+				servicio.method = "POST";
+				
+				servicio.addEventListener("result", httpResult2);										
+				servicio.addEventListener("fault", httpFault);
+				servicio.send(persona1);
+			}
+			public function httpResult2(evento1:ResultEvent): void
+			{
+				
+				var resultado: Object = evento1.result;
+				
+				if(resultado.productos.producto is ObjectProxy){
+					// personas = new ArrayCollection([{id:resultado.personas.persona.id , nombre:resultado.personas.persona.nombre , 
+					// apellido:resultado.personas.persona.apellido , :resultado.personas.persona.nombre}]);
+					//jcomboProduct.dataProvider = resultado.productos.producto;
+					//Alert.show("EL prestamo se insero correctamente");
+					
+					
+				} else {
+					//Alert.show("Entro");
+					jcomboNameTeacher.dataProvider = resultado.productos.producto;
+					//Alert.show("EL prestamo se insero correctamente");
+					
+					//jcomboProduct.dataProvider = resultado.productos.producto;
+					
+					//jcomboNameTeacher.dataProvider = resultado.productos.producto;				
+					
+					
+					//personas = resultado.personas.persona;
+				}
+			}
+			
+			//*************************************************************************************
+			
+			
+			//************************************************************************************
+			protected function Sound3(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidobtn.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			protected function Soundlbl(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidolbl.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			protected function Soundtxt(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidotxt.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			//*****************************************************************************************
+			
+			protected function jcomboNameTeacher_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				//Alert.show("Si estamos en el evento");
+				//getProductos();
+				getProductos();
+				if(jcomboProduct.selectedIndex >= 0)
+				{
+					//Alert.show("Si estamos en el evento enter");
+					
+					jcomboProduct.setStyle("focusColor", "#70b2ee");
+					
+				}
+			}
+			
+			protected function jcomboProduct_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(jcomboProduct.selectedIndex >= 0)
+				{
+					
+					jcomboProduct.setStyle("focusColor", "#70b2ee");
+					
+				}
+				
+			}
+			
+			///*****************************************************************************************
+			public function eliminarProducto(persona:Object):void
+			{
+				servicio = new mx.rpc.http.HTTPService();
+				servicio.url = "http://localhost/bolivariano/eliminarPrestamo.php";
+				servicio.method = "POST";
+				//servicio.addEventListener("result", httpResult);
+				servicio.addEventListener("fault", httpFault);
+				servicio.send(persona);
+			}
+			///*****************************************************************************************
+			
+			
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			
+		]]>
+		
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:ComboBox id="jcomboProduct" x="238" y="236" width="191" height="36"
+				change="jcomboProduct_changeHandler(event)" enabled="true" labelField="nombre"
+				prompt="Seleccione una opción" rollOver="Soundtxt (event)" selectedIndex="0"
+				toolTip="Seleccione el producto a eliminar"/>
+	
+	<s:ComboBox id="jcomboNameTeacher" x="241" y="183" width="191" height="36"
+				change="jcomboNameTeacher_changeHandler(event)" enabled="true" fontSize="14"
+				labelField="cedula" prompt="Seleccione una opción" rollOver="Soundtxt (event)"
+				selectedIndex="0" toolTip="Seleccione el nombre del docente"/>
+	<s:Button id="btnSaveForHire" x="244" y="316" width="175" height="38" label="Eliminar Préstamo"
+			  click="btnSaveForHire_clickHandler(event)" icon="assets/eliminarprestamo.png"
+			  toolTip="Presione para eliminar  el prestamo" rollOver="Sound3 (event)" />
+	<s:Label x="31" y="170" width="205" height="56" text="Nombre del docente*:" textAlign="center"
+			 toolTip="Etiqueta nombre del profesor" verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Label x="35" y="231" width="205" height="53" text="Productos prestados:" textAlign="center"
+			 toolTip="Etiqueta nombre del producto" verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Label id="lbltitulo" x="54" y="-4" width="349" height="58" fontSize="21" text="Eliminar Préstamo"
+			 textAlign="center" verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Button id="btnhelp" x="478" y="10" width="21" height="18" chromeColor="#FFFFFF"
+			  click="btnhelp_clickHandler(event)" cornerRadius="5" icon="assets/ayuda.png"
+			  toolTip="Presione para obtener ayuda " rollOver="Sound3 (event)"/>
+	<s:Button id="btnUpdateLeterUp" x="454" y="51" width="46" height="20" label=" A +"
+			  click="btnUpdateLeterUp_clickHandler(event)" fontSize="14" fontWeight="bold"
+			  toolTip="Presione para aumentar el tamaño de la funte " rollOver="Sound3 (event)"/>
+	<s:Button id="btnUpdateLeterDown" x="408" y="54" width="38" height="17" label="A -"
+			  click="btnUpdateLeterDown_clickHandler(event)" fontSize="10" fontWeight="bold"
+			  toolTip="Presione para disminuir el tamaño de la fuente" rollOver="Sound3 (event)"/>
+	<s:CheckBox id="btndaltonico" x="478" y="113" width="21" height="27"
+				click="checkbox1_clickHandler(event)" />
+	<s:Label x="327" y="108" width="150" height="35" text="Modo daltonico" textAlign="center"
+			 verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Button id="btnsonido" x="360" y="77" width="140" height="23" label="Activar Sonido"
+			  click="button1_clickHandler(event)" icon="assets/soun.png"
+			  toolTip="Presione aquí para activar los sonidos de los objetos de la interfaz" rollOver="Sound3 (event)"/>
+	
+</s:TitleWindow>

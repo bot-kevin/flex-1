@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="504" height="450">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Menu;
+			import mx.events.MenuEvent;
+			import mx.controls.Alert;           
+			import flash.geom.Point;
+			
+			private var point1:Point = new Point();
+			private var myMenu:Menu;
+			
+			// Create and display the Menu control.
+			private function showMenu():void {
+				myMenu= Menu.createMenu(panel, myMenuData, false);
+				myMenu.labelField="@label"
+				myMenu.addEventListener("itemClick", menuHandler);
+				
+				// Calculate position of Menu in Application's coordinates. 
+				point1.x=mybutton.x;
+				point1.y=mybutton.y;                
+				point1=mybutton.localToGlobal(point1);
+				
+				myMenu.show(point1.x + 25, point1.y + 25);
+			}
+			
+			// Event handler for the Menu control's change event.
+			private function menuHandler(event:MenuEvent):void  {
+				Alert.show("Label: " + event.item.@label, "Clicked menu item");
+			}    
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		  <fx:XML id="myMenuData">
+			   <root>
+				   <menuitem label="MenuItem 1" eventName="copy"/>
+				   <menuitem label="MenuItem 2" eventName="paste"/>
+			   </root>
+		   </fx:XML>
+	</fx:Declarations>
+	<mx:Panel id="panel" title="Menu Control Example"
+			  paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10"
+			  height="100%" width="100%">
+		
+		<mx:Label width="100%"
+				  text="Click the button to open the Menu control."/>
+		
+		<mx:Button id="mybutton" label="Open Menu" click="showMenu()"/>
+		
+	</mx:Panel>
+</s:Group>

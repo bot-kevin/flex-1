@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="718" height="506"
+		 creationComplete="enviarDatos()">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			import flash.sampler.NewObjectSample;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.rpc.http.mxml.HTTPService;
+			import mx.utils.ObjectProxy;
+			
+			var banderasonido:Boolean= new Boolean(false);
+			var number = 12;
+			var sizeTitle = 36;
+			
+			public var servicio:mx.rpc.http.HTTPService;
+			[Bindable]
+			//  con lo que se llena la tabla 
+			public var personas: ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var metodos: Array = ["POST","GET","PUT","DELETE"];
+			[Bindable]
+			public var selectedItem: Object = "GET";
+			
+			protected function checkbox1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(btndaltonico.selected){
+					this.setStyle("backgroundColor", "#000000");
+					this.setStyle("color","white");
+					
+				}else {
+					this.setStyle("backgroundColor", "#ffffff");
+					this.setStyle("color","black");
+				}
+				
+			}
+			protected function btnUpdateLeterUp_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				
+				if(number < 20 && sizeTitle < 44) {
+					number = number +2;				
+					sizeTitle = sizeTitle +2;
+					this.setStyle("fontSize", number);				
+					lbltitulo.setStyle("fontSize",sizeTitle);
+				}
+				// rollOver para evento pasar
+			}
+			protected function btnUpdateLeterDown_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub							
+				
+				
+				// lbltirar.text = ""+number +" "+sizeTitle;
+				if(number > 12 && sizeTitle > 36) {
+					number = number - 2;
+					sizeTitle = sizeTitle -2;
+					this.setStyle("fontSize",number);
+					lbltitulo.setStyle("fontSize",sizeTitle);	
+				}
+				
+			}
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if( btnsonido.label == "Activar Sonido")
+				{ 
+					btnsonido.label= "Desactivar Sonido";
+					btnsonido.setStyle("icon", "assets/mute.png");
+					banderasonido=true;
+				}
+				else
+				{
+					btnsonido.label= "Activar Sonido";
+					btnsonido.setStyle("icon", "assets/soun.png");
+					banderasonido = false;
+				}
+			}
+			protected function btnhelp_clickHandler(event:MouseEvent):void	
+			{
+				Alert.show("Interfaz crear Préstamo\nEsta es una interfaz para crear préstamo de productos a profesores.\nLos préstamos se cran seleccionando un nombre de producto\n" +
+					"y seleccionando un nombre de docente, posteriormente de presiona el botón Guardar préstamo");
+				
+			}
+			
+			
+			
+			///********************************************************************************
+			public function enviarDatos(): void
+			{
+				var objeto: Object = new Object();
+				usarHttpService(objeto);
+			}
+			
+			public function traspasar(): void
+			{
+				var persona: Object = tabla.selectedItem;
+				Alert.show(persona.id);
+				//txtcedula.text = persona.cedula;
+				//txtnombre.text = persona.nombre;				
+			}
+			
+			public function usarHttpService(persona:Object):void
+			{
+				
+				servicio = new mx.rpc.http.HTTPService();
+				servicio.url = "http://localhost/bolivariano/insertar.php";
+				servicio.method = "POST";
+				
+				// tenemos el resultado
+				servicio.addEventListener("result", httpResult);
+				servicio.addEventListener("fault", httpFault);
+				
+				servicio.send(persona);
+			}
+					
+			public function httpResult(evento:ResultEvent): void
+			{
+				var resultado: Object = evento.result;
+				
+				if(resultado.personas.persona is ObjectProxy)
+				{
+					// personas = new ArrayCollection([{cedula:resultado.personas.persona.cedula , nombre:resultado.personas.persona.nombre}]);
+					// personas = new ArrayCollection([{cedula:resultado.personas.persona.cedula}]);
+				}
+				else
+				{
+					// personas = new ArrayCollection([{cedula:resultado.personas.persona.cedula , nombre:resultado.personas.persona.nombre}]);
+					personas = resultado.personas.persona;
+				}
+			}
+			
+			public function httpFault(evento:FaultEvent): void
+			{
+				var error: String = evento.fault.faultString;
+				Alert.show(error);
+			}
+			
+			//***********************************************************************************
+			
+			
+			///************************************************************************
+			//************************************************************************************
+			protected function Sound3(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidobtn.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			protected function Soundlbl(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidolbl.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			protected function Soundtxt(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var snd:Sound = new Sound ( new URLRequest("assets/sonidotxt.mp3"));
+				if(banderasonido==true)
+				{					
+					snd.play();
+					//banderasonido = false;
+				}				
+				else{
+					snd.close();
+				}				
+			}
+			//*****************************************************************************************
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:DataGrid id="tabla" x="20" y="171" width="677" height="257" click="traspasar()"
+				dataProvider="{personas}" requestedRowCount="4"/>
+	<s:Label id="lbltitulo" x="178" y="-2" width="349" height="58" fontSize="21" text="Lista de  Préstamos"
+			 textAlign="center" verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Button id="btnhelp" x="684" y="13" width="21" height="18" chromeColor="#FFFFFF"
+			  click="btnhelp_clickHandler(event)" cornerRadius="5" icon="assets/ayuda.png"
+			  toolTip="Presione para obtener ayuda " rollOver="Sound3 (event)"/>
+	<s:Button id="btnUpdateLeterUp" x="660" y="54" width="46" height="20" label=" A +"
+			  click="btnUpdateLeterUp_clickHandler(event)" fontSize="14" fontWeight="bold"
+			  toolTip="Presione para aumentar el tamaño de la funte " rollOver="Sound3 (event)"/>
+	<s:Button id="btnUpdateLeterDown" x="614" y="57" width="38" height="17" label="A -"
+			  click="btnUpdateLeterDown_clickHandler(event)" fontSize="10" fontWeight="bold"
+			  toolTip="Presione para disminuir el tamaño de la fuente" rollOver="Sound3 (event)"/>
+	<s:CheckBox id="btndaltonico" x="684" y="116" width="21" height="27"
+				click="checkbox1_clickHandler(event)" />
+	<s:Label x="533" y="111" width="150" height="35" text="Modo daltonico" textAlign="center"
+			 verticalAlign="middle" rollOver="Soundlbl(event)"/>
+	<s:Button id="btnsonido" x="566" y="80" width="140" height="23" label="Activar Sonido"
+			  click="button1_clickHandler(event)" icon="assets/soun.png"
+			  toolTip="Presione aquí para activar los sonidos de los objetos de la interfaz" rollOver="Sound3 (event)"/>
+
+</s:TitleWindow>
